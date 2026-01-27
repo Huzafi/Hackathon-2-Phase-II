@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JWT Token Payload Schema",
+  "description": "Schema for JWT access token payload used in authentication system",
+  "type": "object",
+  "required": ["sub", "email", "iat", "exp", "type"],
+  "properties": {
+    "sub": {
+      "type": "integer",
+      "description": "Subject: Unique user identifier (primary key from users table). Used by backend to filter database queries and enforce user isolation.",
+      "example": 1,
+      "minimum": 1
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "User's email address. Included for convenience and debugging. NOT used for authorization (use 'sub' instead).",
+      "example": "user@example.com",
+      "maxLength": 255
+    },
+    "iat": {
+      "type": "integer",
+      "description": "Issued At: Unix timestamp (seconds since epoch) when token was created. Standard JWT claim.",
+      "example": 1705680000,
+      "minimum": 0
+    },
+    "exp": {
+      "type": "integer",
+      "description": "Expiration: Unix timestamp (seconds since epoch) when token expires. Set to iat + 3600 (1 hour). Standard JWT claim.",
+      "example": 1705683600,
+      "minimum": 0
+    },
+    "type": {
+      "type": "string",
+      "enum": ["access"],
+      "description": "Token type identifier. Always 'access' for access tokens. Distinguishes from potential future refresh tokens.",
+      "example": "access"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "sub": 1,
+      "email": "user@example.com",
+      "iat": 1705680000,
+      "exp": 1705683600,
+      "type": "access"
+    },
+    {
+      "sub": 42,
+      "email": "alice@example.com",
+      "iat": 1705690000,
+      "exp": 1705693600,
+      "type": "access"
+    }
+  ],
+  "notes": {
+    "algorithm": "HS256 (HMAC with SHA-256)",
+    "secret": "Stored in JWT_SECRET environment variable (must be identical in frontend and backend)",
+    "expiration": "1 hour (3600 seconds) from issuance",
+    "storage": "NOT stored in database (stateless authentication)",
+    "usage": {
+      "frontend": "Stored in localStorage, attached to API requests via Authorization header",
+      "backend": "Verified on every protected endpoint, user ID extracted from 'sub' claim"
+    },
+    "security": {
+      "signature_verification": "Backend MUST verify signature using shared secret before trusting payload",
+      "expiration_check": "Backend MUST reject expired tokens (exp < current time)",
+      "user_existence": "Backend SHOULD verify user ID exists in database (optional but recommended)"
+    }
+  }
+}
