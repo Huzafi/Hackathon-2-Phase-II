@@ -208,3 +208,156 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Project-Specific Configuration
+
+### Technology Stack
+
+This project is a **Todo Full-Stack Web Application** with the following technology stack:
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16+ (App Router) |
+| Backend | Python FastAPI |
+| ORM | SQLModel |
+| Database | Neon Serverless PostgreSQL |
+| Authentication | Better Auth (JWT-based) |
+| Development | Claude Code + Spec-Kit Plus |
+
+### Specialized Agent Usage
+
+For this project, delegate tasks to specialized agents based on the domain:
+
+#### 1. **Auth Agent** (`auth-specialist`)
+Use for all authentication and identity management tasks:
+- User signup/signin implementation
+- Better Auth integration and configuration
+- JWT token generation and validation
+- Password management (hashing, reset flows)
+- Session management
+- Security-related authentication features
+
+**When to invoke:**
+```
+User needs: "Implement user registration with Better Auth"
+Action: Launch auth-specialist agent
+```
+
+#### 2. **Frontend Agent** (`nextjs-frontend-builder`)
+Use for all Next.js App Router frontend development:
+- Building UI components and pages
+- Implementing responsive layouts
+- Setting up Next.js App Router routing
+- Client-side state management
+- Form handling and validation
+- Accessibility improvements
+
+**When to invoke:**
+```
+User needs: "Create a todo list page with add/edit/delete functionality"
+Action: Launch nextjs-frontend-builder agent
+```
+
+#### 3. **Database Agent** (`neon-db-specialist`)
+Use for all database-related tasks:
+- Designing database schemas and relationships
+- Creating and managing Neon PostgreSQL databases
+- Writing and optimizing SQL queries
+- Implementing database migrations
+- Adding indexes and constraints
+- Performance optimization
+
+**When to invoke:**
+```
+User needs: "Design a todos table with user relationships"
+Action: Launch neon-db-specialist agent
+```
+
+#### 4. **Backend Agent** (`fastapi-backend-dev`)
+Use for all FastAPI backend development:
+- Creating REST API endpoints
+- Request/response validation with Pydantic
+- SQLModel ORM integration
+- Middleware configuration
+- Error handling and logging
+- API documentation
+
+**When to invoke:**
+```
+User needs: "Create API endpoints for CRUD operations on todos"
+Action: Launch fastapi-backend-dev agent
+```
+
+### Authentication Architecture
+
+This project uses **Better Auth with JWT tokens** for authentication:
+
+#### Flow:
+1. **User Login** → Better Auth creates session and issues JWT token
+2. **Frontend API Call** → Includes JWT in `Authorization: Bearer <token>` header
+3. **Backend Verification** → Extracts and verifies JWT signature using shared secret
+4. **User Identification** → Decodes token to get user ID, email, etc.
+5. **Data Filtering** → Returns only data belonging to authenticated user
+
+#### Implementation Requirements:
+- Better Auth must be configured to issue JWT tokens
+- All protected API endpoints must verify JWT tokens
+- Backend must extract user ID from JWT and filter queries accordingly
+- Shared secret key must be stored in `.env` (never hardcoded)
+- Token expiration and refresh logic must be implemented
+
+### Development Workflow
+
+This project follows **Spec-Driven Development (SDD)** with strict no-manual-coding policy:
+
+1. **Write Spec** → Use `/sp.specify` to create feature specification
+2. **Generate Plan** → Use `/sp.plan` to architect the solution
+3. **Break into Tasks** → Use `/sp.tasks` to create actionable tasks
+4. **Implement** → Use specialized agents to execute tasks
+5. **Review** → Validate against spec and acceptance criteria
+
+**Critical Rules:**
+- NO manual coding allowed - all code must be generated via Claude Code
+- All features must start with a spec
+- All architectural decisions must be documented in ADRs
+- All user interactions must be recorded in PHRs
+- Use specialized agents for their respective domains
+
+### Multi-User Requirements
+
+This is a **multi-user application** with the following requirements:
+
+- Each user must have their own account (signup/signin)
+- Users can only see and manage their own todos
+- All API endpoints must be protected with JWT authentication
+- Database queries must filter by authenticated user ID
+- User data must be isolated and secure
+
+### API Design Principles
+
+All REST API endpoints must follow these conventions:
+
+- **Authentication:** All endpoints (except signup/signin) require JWT token
+- **User Filtering:** All data queries must filter by authenticated user ID
+- **Error Handling:** Return appropriate HTTP status codes (401, 403, 404, 500)
+- **Validation:** Use Pydantic models for request/response validation
+- **Documentation:** FastAPI auto-generates OpenAPI docs at `/docs`
+
+Example endpoint structure:
+```
+GET    /api/todos          - List all todos for authenticated user
+POST   /api/todos          - Create new todo for authenticated user
+GET    /api/todos/{id}     - Get specific todo (verify ownership)
+PUT    /api/todos/{id}     - Update todo (verify ownership)
+DELETE /api/todos/{id}     - Delete todo (verify ownership)
+```
+
+## Active Technologies
+- Python 3.11+ + FastAPI (latest), SQLModel (latest), Better Auth SDK (JWT), Pydantic v2, httpx (001-todo-web-app)
+- Neon Serverless PostgreSQL (cloud-hosted, serverless) (001-todo-web-app)
+- Neon Serverless PostgreSQL (existing from Feature 001) (002-auth-api-security)
+- TypeScript 5.7+ with Next.js 15.1+ (App Router) (003-frontend-integration)
+- Browser localStorage/sessionStorage for JWT token persistence (003-frontend-integration)
+
+## Recent Changes
+- 001-todo-web-app: Added Python 3.11+ + FastAPI (latest), SQLModel (latest), Better Auth SDK (JWT), Pydantic v2, httpx

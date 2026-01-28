@@ -1,0 +1,216 @@
+openapi: 3.0.3
+info:
+  title: Authentication API
+  description: JWT-based authentication endpoints for multi-user todo application
+  version: 1.0.0
+  contact:
+    name: Todo App Team
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.todo-app.example.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User registration and sign-in endpoints
+
+paths:
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: |
+        Create a new user account with email and password. Returns JWT token upon successful registration.
+
+        **Requirements**:
+        - Email must be unique (not already registered)
+        - Email must conform to RFC 5322 format
+        - Password must meet complexity requirements (8+ chars, uppercase, lowercase, digit, special char)
+
+        **Success**: Returns 201 Created with JWT token
+        **Failure**: Returns 400 Bad Request if validation fails or email already exists
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+            examples:
+              valid:
+                summary: Valid registration
+                value:
+                  email: user@example.com
+                  password: SecurePass123!
+              weak_password:
+                summary: Weak password (will fail)
+                value:
+                  email: user@example.com
+                  password: weak
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsImlhdCI6MTcwNTY4MDAwMCwiZXhwIjoxNzA1NjgzNjAwLCJ0eXBlIjoiYWNjZXNzIn0.signature
+                token_type: bearer
+                expires_in: 3600
+        '400':
+          description: Validation error or email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                email_exists:
+                  summary: Email already registered
+                  value:
+                    detail: Email already registered
+                weak_password:
+                  summary: Password too weak
+                  value:
+                    detail: Password must contain at least one uppercase letter
+                invalid_email:
+                  summary: Invalid email format
+                  value:
+                    detail: Invalid email format
+
+  /auth/signin:
+    post:
+      tags:
+        - Authentication
+      summary: Sign in existing user
+      description: |
+        Authenticate user with email and password. Returns fresh JWT token upon successful sign-in.
+
+        **Security**: Returns consistent error message for invalid credentials to prevent user enumeration.
+
+        **Success**: Returns 200 OK with JWT token
+        **Failure**: Returns 401 Unauthorized if credentials are invalid
+      operationId: signin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SigninRequest'
+            example:
+              email: user@example.com
+              password: SecurePass123!
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsImlhdCI6MTcwNTY4MDAwMCwiZXhwIjoxNzA1NjgzNjAwLCJ0eXBlIjoiYWNjZXNzIn0.signature
+                token_type: bearer
+                expires_in: 3600
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: Invalid credentials
+
+components:
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: User's email address (must be unique)
+          example: user@example.com
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          format: password
+          description: |
+            Password must meet complexity requirements:
+            - Minimum 8 characters
+            - At least one uppercase letter (A-Z)
+            - At least one lowercase letter (a-z)
+            - At least one digit (0-9)
+            - At least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)
+          example: SecurePass123!
+
+    SigninRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: User's password
+          example: SecurePass123!
+
+    TokenResponse:
+      type: object
+      required:
+        - access_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: JWT access token (use in Authorization header as "Bearer {token}")
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsImlhdCI6MTcwNTY4MDAwMCwiZXhwIjoxNzA1NjgzNjAwLCJ0eXBlIjoiYWNjZXNzIn0.signature
+        token_type:
+          type: string
+          enum: [bearer]
+          description: Token type (always "bearer")
+          example: bearer
+        expires_in:
+          type: integer
+          description: Token expiration time in seconds (1 hour = 3600 seconds)
+          example: 3600
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: Invalid credentials
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from /auth/signup or /auth/signin.
+
+        **Usage**: Include in Authorization header as "Bearer {token}"
+
+        **Example**: Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+        **Expiration**: Tokens expire after 1 hour. Client must re-authenticate to obtain new token.
+
+security: []  # Auth endpoints are public (no authentication required)

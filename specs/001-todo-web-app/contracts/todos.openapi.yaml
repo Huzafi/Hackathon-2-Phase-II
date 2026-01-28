@@ -1,0 +1,535 @@
+openapi: 3.0.3
+info:
+  title: Todo Backend - Todos API
+  description: |
+    CRUD endpoints for managing todo items. All endpoints require JWT authentication.
+
+    **Security Model**: All endpoints require `Authorization: Bearer <token>` header.
+    Users can only access their own todos (enforced by user_id filtering).
+
+    **Data Isolation**: All queries are automatically filtered by authenticated user ID.
+    Attempting to access another user's todo returns 403 Forbidden.
+  version: 1.0.0
+  contact:
+    name: Todo Backend API
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.todo-app.example.com
+    description: Production server (placeholder)
+
+tags:
+  - name: Todos
+    description: Todo CRUD operations (Create, Read, Update, Delete)
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/todos:
+    get:
+      tags:
+        - Todos
+      summary: List all todos for authenticated user
+      description: |
+        Returns all todos belonging to the authenticated user, sorted by creation date (newest first).
+
+        **User Isolation**: Only returns todos where `user_id` matches the authenticated user.
+        Other users' todos are never exposed.
+      operationId: listTodos
+      responses:
+        '200':
+          description: List of todos (may be empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoResponse'
+              examples:
+                with_todos:
+                  summary: User has todos
+                  value:
+                    - id: 1
+                      title: Buy groceries
+                      description: Milk, eggs, bread
+                      is_completed: false
+                      user_id: 1
+                      created_at: "2026-01-16T10:30:00Z"
+                      updated_at: "2026-01-16T10:30:00Z"
+                    - id: 2
+                      title: Finish project
+                      description: null
+                      is_completed: true
+                      user_id: 1
+                      created_at: "2026-01-15T14:20:00Z"
+                      updated_at: "2026-01-16T09:15:00Z"
+                empty:
+                  summary: User has no todos
+                  value: []
+        '401':
+          description: Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Todos
+      summary: Create a new todo
+      description: |
+        Creates a new todo for the authenticated user. The `user_id` is automatically set from the JWT token.
+
+        **Validation Rules**:
+        - Title is required (1-200 characters)
+        - Description is optional (max 1000 characters)
+        - `is_completed` defaults to false
+      operationId: createTodo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoCreate'
+            examples:
+              with_description:
+                summary: Todo with description
+                value:
+                  title: Buy groceries
+                  description: Milk, eggs, bread
+              without_description:
+                summary: Todo without description
+                value:
+                  title: Finish project
+      responses:
+        '201':
+          description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              examples:
+                success:
+                  summary: Created todo
+                  value:
+                    id: 1
+                    title: Buy groceries
+                    description: Milk, eggs, bread
+                    is_completed: false
+                    user_id: 1
+                    created_at: "2026-01-16T10:30:00Z"
+                    updated_at: "2026-01-16T10:30:00Z"
+        '400':
+          description: Invalid request (e.g., empty title)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error (Pydantic)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /api/todos/{todo_id}:
+    get:
+      tags:
+        - Todos
+      summary: Get a specific todo by ID
+      description: |
+        Returns a single todo by ID. Returns 403 if the todo belongs to another user.
+
+        **Ownership Check**: Verifies that `todo.user_id` matches the authenticated user ID.
+      operationId: getTodo
+      parameters:
+        - name: todo_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Todo ID
+          example: 1
+      responses:
+        '200':
+          description: Todo found and user has access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              examples:
+                success:
+                  summary: Todo details
+                  value:
+                    id: 1
+                    title: Buy groceries
+                    description: Milk, eggs, bread
+                    is_completed: false
+                    user_id: 1
+                    created_at: "2026-01-16T10:30:00Z"
+                    updated_at: "2026-01-16T10:30:00Z"
+        '401':
+          description: Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Todo belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Access denied
+                  value:
+                    detail: You do not have permission to access this todo
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Todo does not exist
+                  value:
+                    detail: Todo with id 999 not found
+
+    put:
+      tags:
+        - Todos
+      summary: Update a todo (full update)
+      description: |
+        Updates all fields of a todo. Returns 403 if the todo belongs to another user.
+
+        **Ownership Check**: Verifies that `todo.user_id` matches the authenticated user ID.
+        **Update Behavior**: All fields are replaced (full update, not partial).
+      operationId: updateTodo
+      parameters:
+        - name: todo_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Todo ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoUpdate'
+            examples:
+              update_all:
+                summary: Update all fields
+                value:
+                  title: Buy groceries (updated)
+                  description: Milk, eggs, bread, cheese
+                  is_completed: true
+      responses:
+        '200':
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              examples:
+                success:
+                  summary: Updated todo
+                  value:
+                    id: 1
+                    title: Buy groceries (updated)
+                    description: Milk, eggs, bread, cheese
+                    is_completed: true
+                    user_id: 1
+                    created_at: "2026-01-16T10:30:00Z"
+                    updated_at: "2026-01-16T11:45:00Z"
+        '401':
+          description: Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Todo belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error (Pydantic)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    patch:
+      tags:
+        - Todos
+      summary: Partially update a todo
+      description: |
+        Updates only the specified fields of a todo. Omitted fields remain unchanged.
+        Returns 403 if the todo belongs to another user.
+
+        **Ownership Check**: Verifies that `todo.user_id` matches the authenticated user ID.
+        **Update Behavior**: Only provided fields are updated (partial update).
+      operationId: patchTodo
+      parameters:
+        - name: todo_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Todo ID
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoPatch'
+            examples:
+              toggle_completion:
+                summary: Toggle completion status only
+                value:
+                  is_completed: true
+              update_title:
+                summary: Update title only
+                value:
+                  title: Buy groceries (updated)
+      responses:
+        '200':
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '401':
+          description: Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Todo belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation error (Pydantic)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    delete:
+      tags:
+        - Todos
+      summary: Delete a todo
+      description: |
+        Permanently deletes a todo. Returns 403 if the todo belongs to another user.
+
+        **Ownership Check**: Verifies that `todo.user_id` matches the authenticated user ID.
+        **Deletion Behavior**: Hard delete (cannot be recovered).
+      operationId: deleteTodo
+      parameters:
+        - name: todo_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Todo ID
+          example: 1
+      responses:
+        '204':
+          description: Todo deleted successfully (no content)
+        '401':
+          description: Invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Todo belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Todo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from /api/auth/signin or /api/auth/signup.
+        Include in Authorization header as: `Authorization: Bearer <token>`
+
+  schemas:
+    TodoCreate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Todo title (required)
+          example: Buy groceries
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Optional detailed description
+          example: Milk, eggs, bread
+
+    TodoUpdate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Todo title (required)
+          example: Buy groceries (updated)
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Optional detailed description
+          example: Milk, eggs, bread, cheese
+        is_completed:
+          type: boolean
+          description: Completion status
+          example: true
+
+    TodoPatch:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Todo title (optional)
+          example: Buy groceries (updated)
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Optional detailed description
+          example: Milk, eggs, bread, cheese
+        is_completed:
+          type: boolean
+          description: Completion status (optional)
+          example: true
+
+    TodoResponse:
+      type: object
+      required:
+        - id
+        - title
+        - is_completed
+        - user_id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: Unique todo identifier
+          example: 1
+        title:
+          type: string
+          description: Todo title
+          example: Buy groceries
+        description:
+          type: string
+          nullable: true
+          description: Optional detailed description
+          example: Milk, eggs, bread
+        is_completed:
+          type: boolean
+          description: Completion status
+          example: false
+        user_id:
+          type: integer
+          description: ID of the user who owns this todo
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when todo was created
+          example: "2026-01-16T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when todo was last updated
+          example: "2026-01-16T10:30:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: Todo with id 999 not found
+
+    ValidationError:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  type: string
+                description: Location of the validation error
+              msg:
+                type: string
+                description: Error message
+              type:
+                type: string
+                description: Error type
+          example:
+            - loc: ["body", "title"]
+              msg: "ensure this value has at least 1 characters"
+              type: "value_error.any_str.min_length"
