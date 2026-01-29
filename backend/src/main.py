@@ -25,7 +25,7 @@ app = FastAPI(
     version="1.0.0",
     contact={
         "name": "Todo Backend Team",
-        "url": "https://github.com/your-repo",
+        "url": "https://github.com/Huzafi/Hackathon-2-Phase-II",
     },
     license_info={
         "name": "MIT",
