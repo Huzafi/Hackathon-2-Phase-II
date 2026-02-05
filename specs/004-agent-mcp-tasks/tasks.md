@@ -1,5 +1,6 @@
 # Tasks: AI Agent & MCP Task Operations
 
+
 **Input**: Design documents from `/specs/004-agent-mcp-tasks/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), data-model.md, contracts/, research.md
 
@@ -24,9 +25,9 @@
 
 **Purpose**: Project initialization and dependency installation
 
-- [ ] T001 Install OpenAI Python SDK in backend/requirements.txt
-- [ ] T002 Install OpenAI Agents SDK (Swarm) in backend/requirements.txt
-- [ ] T003 [P] Add OpenAI configuration to backend/.env.example (OPENAI_API_KEY, OPENAI_MODEL, AGENT_TIMEOUT, CONTEXT_WINDOW_SIZE)
+- [X] T001 Install OpenAI Python SDK in backend/requirements.txt
+- [X] T002 Install OpenAI Agents SDK (Swarm) in backend/requirements.txt
+- [X] T003 [P] Add OpenAI configuration to backend/.env.example (OPENAI_API_KEY, OPENAI_MODEL, AGENT_TIMEOUT, CONTEXT_WINDOW_SIZE)
 
 ---
 
@@ -36,25 +37,25 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create Conversation model in backend/src/models/conversation.py with UUID id, user_id FK, title, created_at, updated_at
-- [ ] T005 [P] Create Message model in backend/src/models/message.py with id, conversation_id FK, role enum, content, tool_calls JSON, created_at
-- [ ] T006 [P] Create ToolInvocation model in backend/src/models/tool_invocation.py with id, message_id FK, conversation_id FK, user_id FK, tool_name, tool_arguments JSON, tool_result JSON, success, error_message, execution_time_ms, created_at
-- [ ] T007 Update database initialization in backend/src/core/database.py to include new models (Conversation, Message, ToolInvocation)
-- [ ] T008 [P] Create agent module directory structure backend/src/agent/ with __init__.py
-- [ ] T009 [P] Create agent prompts module in backend/src/agent/prompts.py with system prompt for todo management
-- [ ] T010 [P] Create agent initialization module in backend/src/agent/agent.py with Swarm client setup
-- [ ] T011 [P] Create MCP tools module skeleton in backend/src/agent/tools.py with tool helper functions
-- [ ] T012 [P] Create ChatRequest schema in backend/src/schemas/chat.py with conversation_id optional and message fields
-- [ ] T013 [P] Create ChatResponse schema in backend/src/schemas/chat.py with conversation_id, message, tool_calls, created_at
-- [ ] T014 [P] Create ToolCallSchema in backend/src/schemas/chat.py with id, name, arguments, result fields
-- [ ] T015 [P] Create ConversationSchema in backend/src/schemas/conversation.py with id, user_id, title, created_at, updated_at
-- [ ] T016 [P] Create MessageSchema in backend/src/schemas/conversation.py with id, conversation_id, role, content, tool_calls, created_at
-- [ ] T017 [P] Create ConversationDetailSchema in backend/src/schemas/conversation.py extending ConversationSchema with messages array
-- [ ] T018 Create chat API router skeleton in backend/src/api/chat.py with POST /api/chat endpoint structure
-- [ ] T019 [P] Create conversations API router in backend/src/api/conversations.py with GET, GET/{id}, DELETE/{id} endpoints
-- [ ] T020 Register chat router in backend/src/main.py with /api prefix
-- [ ] T021 Register conversations router in backend/src/main.py with /api prefix
-- [ ] T022 Add OpenAI configuration to backend/src/core/config.py (OPENAI_API_KEY, OPENAI_MODEL, AGENT_TIMEOUT, CONTEXT_WINDOW_SIZE)
+- [X] T004 Create Conversation model in backend/src/models/conversation.py with UUID id, user_id FK, title, created_at, updated_at
+- [X] T005 [P] Create Message model in backend/src/models/message.py with id, conversation_id FK, role enum, content, tool_calls JSON, created_at
+- [X] T006 [P] Create ToolInvocation model in backend/src/models/tool_invocation.py with id, message_id FK, conversation_id FK, user_id FK, tool_name, tool_arguments JSON, tool_result JSON, success, error_message, execution_time_ms, created_at
+- [X] T007 Update database initialization in backend/src/core/database.py to include new models (Conversation, Message, ToolInvocation)
+- [X] T008 [P] Create agent module directory structure backend/src/agent/ with __init__.py
+- [X] T009 [P] Create agent prompts module in backend/src/agent/prompts.py with system prompt for todo management
+- [X] T010 [P] Create agent initialization module in backend/src/agent/agent.py with Swarm client setup
+- [X] T011 [P] Create MCP tools module skeleton in backend/src/agent/tools.py with tool helper functions
+- [X] T012 [P] Create ChatRequest schema in backend/src/schemas/chat.py with conversation_id optional and message fields
+- [X] T013 [P] Create ChatResponse schema in backend/src/schemas/chat.py with conversation_id, message, tool_calls, created_at
+- [X] T014 [P] Create ToolCallSchema in backend/src/schemas/chat.py with id, name, arguments, result fields
+- [X] T015 [P] Create ConversationSchema in backend/src/schemas/conversation.py with id, user_id, title, created_at, updated_at
+- [X] T016 [P] Create MessageSchema in backend/src/schemas/conversation.py with id, conversation_id, role, content, tool_calls, created_at
+- [X] T017 [P] Create ConversationDetailSchema in backend/src/schemas/conversation.py extending ConversationSchema with messages array
+- [X] T018 Create chat API router skeleton in backend/src/api/chat.py with POST /api/chat endpoint structure
+- [X] T019 [P] Create conversations API router in backend/src/api/conversations.py with GET, GET/{id}, DELETE/{id} endpoints
+- [X] T020 Register chat router in backend/src/main.py with /api prefix
+- [X] T021 Register conversations router in backend/src/main.py with /api prefix
+- [X] T022 Add OpenAI configuration to backend/src/core/config.py (OPENAI_API_KEY, OPENAI_MODEL, AGENT_TIMEOUT, CONTEXT_WINDOW_SIZE)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -68,18 +69,18 @@
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Implement create_task MCP tool in backend/src/agent/tools.py with title, description parameters and user_id from context
-- [ ] T024 [US1] Add input validation for create_task tool using Pydantic schema
-- [ ] T025 [US1] Add database operation in create_task to insert Todo record filtered by user_id
-- [ ] T026 [US1] Add error handling in create_task for database failures and return structured error response
-- [ ] T027 [US1] Add tool invocation logging in create_task to ToolInvocation table
-- [ ] T028 [US1] Register create_task tool with agent in backend/src/agent/agent.py
-- [ ] T029 [US1] Implement conversation creation logic in backend/src/api/chat.py for new conversations
-- [ ] T030 [US1] Implement user message saving in backend/src/api/chat.py to Message table
-- [ ] T031 [US1] Implement conversation history loading in backend/src/api/chat.py (last 20 messages)
-- [ ] T032 [US1] Implement agent invocation in backend/src/api/chat.py with user_id in context_variables
-- [ ] T033 [US1] Implement assistant response saving in backend/src/api/chat.py with tool_calls to Message table
-- [ ] T034 [US1] Add error handling in chat endpoint for agent timeouts and database errors
+- [X] T023 [US1] Implement create_task MCP tool in backend/src/agent/tools.py with title, description parameters and user_id from context
+- [X] T024 [US1] Add input validation for create_task tool using Pydantic schema
+- [X] T025 [US1] Add database operation in create_task to insert Todo record filtered by user_id
+- [X] T026 [US1] Add error handling in create_task for database failures and return structured error response
+- [X] T027 [US1] Add tool invocation logging in create_task to ToolInvocation table
+- [X] T028 [US1] Register create_task tool with agent in backend/src/agent/agent.py
+- [X] T029 [US1] Implement conversation creation logic in backend/src/api/chat.py for new conversations
+- [X] T030 [US1] Implement user message saving in backend/src/api/chat.py to Message table
+- [X] T031 [US1] Implement conversation history loading in backend/src/api/chat.py (last 20 messages)
+- [X] T032 [US1] Implement agent invocation in backend/src/api/chat.py with user_id in context_variables
+- [X] T033 [US1] Implement assistant response saving in backend/src/api/chat.py with tool_calls to Message table
+- [X] T034 [US1] Add error handling in chat endpoint for agent timeouts and database errors
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can create tasks via natural language
 
@@ -93,12 +94,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T035 [P] [US2] Implement list_tasks MCP tool in backend/src/agent/tools.py with optional completed filter and user_id from context
-- [ ] T036 [P] [US2] Add database query in list_tasks to fetch todos filtered by user_id
-- [ ] T037 [P] [US2] Add error handling in list_tasks for empty results and database failures
-- [ ] T038 [P] [US2] Add tool invocation logging in list_tasks to ToolInvocation table
-- [ ] T039 [US2] Register list_tasks tool with agent in backend/src/agent/agent.py
-- [ ] T040 [US2] Update agent system prompt in backend/src/agent/prompts.py to include list_tasks usage guidelines
+- [X] T035 [P] [US2] Implement list_tasks MCP tool in backend/src/agent/tools.py with optional completed filter and user_id from context
+- [X] T036 [P] [US2] Add database query in list_tasks to fetch todos filtered by user_id
+- [X] T037 [P] [US2] Add error handling in list_tasks for empty results and database failures
+- [X] T038 [P] [US2] Add tool invocation logging in list_tasks to ToolInvocation table
+- [X] T039 [US2] Register list_tasks tool with agent in backend/src/agent/agent.py
+- [X] T040 [US2] Update agent system prompt in backend/src/agent/prompts.py to include list_tasks usage guidelines
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -112,13 +113,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T041 [P] [US3] Implement update_task MCP tool in backend/src/agent/tools.py with task_id, optional title/description/is_completed, and user_id from context
-- [ ] T042 [P] [US3] Add task ownership verification in update_task (user_id match)
-- [ ] T043 [P] [US3] Add database update operation in update_task with user_id filtering
-- [ ] T044 [P] [US3] Add error handling in update_task for task not found and permission denied
-- [ ] T045 [P] [US3] Add tool invocation logging in update_task to ToolInvocation table
-- [ ] T046 [US3] Register update_task tool with agent in backend/src/agent/agent.py
-- [ ] T047 [US3] Update agent system prompt in backend/src/agent/prompts.py to include update_task usage guidelines
+- [X] T041 [P] [US3] Implement update_task MCP tool in backend/src/agent/tools.py with task_id, optional title/description/is_completed, and user_id from context
+- [X] T042 [P] [US3] Add task ownership verification in update_task (user_id match)
+- [X] T043 [P] [US3] Add database update operation in update_task with user_id filtering
+- [X] T044 [P] [US3] Add error handling in update_task for task not found and permission denied
+- [X] T045 [P] [US3] Add tool invocation logging in update_task to ToolInvocation table
+- [X] T046 [US3] Register update_task tool with agent in backend/src/agent/agent.py
+- [X] T047 [US3] Update agent system prompt in backend/src/agent/prompts.py to include update_task usage guidelines
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently
 
@@ -132,13 +133,13 @@
 
 ### Implementation for User Story 4
 
-- [ ] T048 [P] [US4] Implement delete_task MCP tool in backend/src/agent/tools.py with task_id and user_id from context
-- [ ] T049 [P] [US4] Add task ownership verification in delete_task (user_id match)
-- [ ] T050 [P] [US4] Add database delete operation in delete_task with user_id filtering
-- [ ] T051 [P] [US4] Add error handling in delete_task for task not found and permission denied
-- [ ] T052 [P] [US4] Add tool invocation logging in delete_task to ToolInvocation table
-- [ ] T053 [US4] Register delete_task tool with agent in backend/src/agent/agent.py
-- [ ] T054 [US4] Update agent system prompt in backend/src/agent/prompts.py to include delete_task usage guidelines
+- [X] T048 [P] [US4] Implement delete_task MCP tool in backend/src/agent/tools.py with task_id and user_id from context
+- [X] T049 [P] [US4] Add task ownership verification in delete_task (user_id match)
+- [X] T050 [P] [US4] Add database delete operation in delete_task with user_id filtering
+- [X] T051 [P] [US4] Add error handling in delete_task for task not found and permission denied
+- [X] T052 [P] [US4] Add tool invocation logging in delete_task to ToolInvocation table
+- [X] T053 [US4] Register delete_task tool with agent in backend/src/agent/agent.py
+- [X] T054 [US4] Update agent system prompt in backend/src/agent/prompts.py to include delete_task usage guidelines
 
 **Checkpoint**: All CRUD operations (create, list, update, delete) should now be functional through natural language
 
@@ -152,13 +153,13 @@
 
 ### Implementation for User Story 5
 
-- [ ] T055 [P] [US5] Add comprehensive error handling in create_task for validation errors, database errors, and authentication errors
-- [ ] T056 [P] [US5] Add comprehensive error handling in list_tasks for database errors and authentication errors
-- [ ] T057 [P] [US5] Add comprehensive error handling in update_task for validation errors, not found errors, permission errors, database errors
-- [ ] T058 [P] [US5] Add comprehensive error handling in delete_task for not found errors, permission errors, database errors
-- [ ] T059 [US5] Update agent system prompt in backend/src/agent/prompts.py to include error translation guidelines
-- [ ] T060 [US5] Add error response formatting in backend/src/api/chat.py for agent errors, timeouts, and database failures
-- [ ] T061 [US5] Add error response formatting in backend/src/api/conversations.py for not found and permission errors
+- [X] T055 [P] [US5] Add comprehensive error handling in create_task for validation errors, database errors, and authentication errors
+- [X] T056 [P] [US5] Add comprehensive error handling in list_tasks for database errors and authentication errors
+- [X] T057 [P] [US5] Add comprehensive error handling in update_task for validation errors, not found errors, permission errors, database errors
+- [X] T058 [P] [US5] Add comprehensive error handling in delete_task for not found errors, permission errors, database errors
+- [X] T059 [US5] Update agent system prompt in backend/src/agent/prompts.py to include error translation guidelines
+- [X] T060 [US5] Add error response formatting in backend/src/api/chat.py for agent errors, timeouts, and database failures
+- [X] T061 [US5] Add error response formatting in backend/src/api/conversations.py for not found and permission errors
 
 **Checkpoint**: All user stories should now handle errors gracefully with clear user feedback
 
@@ -170,9 +171,9 @@
 
 **Purpose**: Enable users to manage their conversation history
 
-- [ ] T062 [P] Implement GET /api/conversations endpoint in backend/src/api/conversations.py with user_id filtering and pagination
-- [ ] T063 [P] Implement GET /api/conversations/{id} endpoint in backend/src/api/conversations.py with ownership verification
-- [ ] T064 [P] Implement DELETE /api/conversations/{id} endpoint in backend/src/api/conversations.py with cascade delete of messages
+- [X] T062 [P] Implement GET /api/conversations endpoint in backend/src/api/conversations.py with user_id filtering and pagination
+- [X] T063 [P] Implement GET /api/conversations/{id} endpoint in backend/src/api/conversations.py with ownership verification
+- [X] T064 [P] Implement DELETE /api/conversations/{id} endpoint in backend/src/api/conversations.py with cascade delete of messages
 
 **Checkpoint**: Conversation management features complete
 
@@ -182,11 +183,11 @@
 
 **Purpose**: Documentation, deployment preparation, and final validation
 
-- [ ] T065 [P] Update backend/.env.example with all required OpenAI configuration variables
-- [ ] T066 [P] Create deployment checklist in specs/004-agent-mcp-tasks/deployment.md
-- [ ] T067 [P] Verify all database queries include user_id filtering (security audit)
-- [ ] T068 [P] Verify all tool invocations are logged to ToolInvocation table (audit trail)
-- [ ] T069 Run manual validation of all user stories (US1-US5) with curl commands from quickstart.md
+- [X] T065 [P] Update backend/.env.example with all required OpenAI configuration variables
+- [X] T066 [P] Create deployment checklist in specs/004-agent-mcp-tasks/deployment.md
+- [X] T067 [P] Verify all database queries include user_id filtering (security audit)
+- [X] T068 [P] Verify all tool invocations are logged to ToolInvocation table (audit trail)
+- [X] T069 Run manual validation of all user stories (US1-US5) with curl commands from quickstart.md
 
 ---
 
