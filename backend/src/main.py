@@ -7,7 +7,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 import time
 import logging
 from .core.database import create_db_and_tables
-from .api import auth, todos
+from .api import auth, todos, chat, conversations
 
 
 # Configure logging
@@ -46,6 +46,8 @@ app.add_middleware(
 # Register routers
 app.include_router(auth.router)
 app.include_router(todos.router)
+app.include_router(chat.router, prefix="/api")
+app.include_router(conversations.router, prefix="/api")
 
 
 # Request logging middleware
